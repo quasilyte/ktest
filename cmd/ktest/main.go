@@ -19,9 +19,15 @@ func main() {
 	cmds := []subcmd.Command{
 		{
 			Name:        "phpunit",
-			Description: "",
+			Description: "run phpunit tests",
 			Do:          phpunitMain,
 		},
+
+		{
+			Name: "bench",
+			Description: "run benchmark tests",
+			Do: benchMain,
+		}
 
 		{
 			Name:        "env",
@@ -43,6 +49,10 @@ func envMain(args []string) {
 		v := os.Getenv(name)
 		fmt.Printf("%s=%q\n", name, v)
 	}
+}
+
+func benchMain(args []string) {
+	log.Fatal("not implemented")
 }
 
 func phpunitMain(args []string) {
