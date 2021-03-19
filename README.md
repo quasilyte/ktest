@@ -1,11 +1,15 @@
 ## Overview
 
-TODO.
+`ktest` is a project that makes [kphp](https://github.com/VKCOM/kphp/) programs easier to test.
+
+* `kphp phpunit` can run [PHPUnit](https://github.com/sebastianbergmann/phpunit) tests
+* `kphp bench` runs benchmark tests (not implemented yet)
 
 ## TODO
 
 * Failed assertions line info
 * Mocks
+* Benchmarks
 
 ## Limitations
 
