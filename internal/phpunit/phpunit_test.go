@@ -18,11 +18,6 @@ func TestPhpunit(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	kphpEnv := kenv.NewInfo()
-	if err := kphpEnv.FindRoot(); err != nil {
-		t.Fatal(err)
-	}
-
 	absFilepath := func(t *testing.T, filename string) string {
 		abs, err := filepath.Abs(filename)
 		if err != nil {
@@ -65,7 +60,7 @@ func TestPhpunit(t *testing.T) {
 			ProjectRoot: workdir,
 			SrcDir:      "src",
 			TestTarget:  "tests",
-			KphpCommand: kphpEnv.KphpBinary(),
+			KphpCommand: kenv.FindKphpBinary(),
 			Output:      &output,
 		})
 		if err != nil {

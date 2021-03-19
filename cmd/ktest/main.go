@@ -24,10 +24,10 @@ func main() {
 		},
 
 		{
-			Name: "bench",
+			Name:        "bench",
 			Description: "run benchmark tests",
-			Do: benchMain,
-		}
+			Do:          benchMain,
+		},
 
 		{
 			Name:        "env",
@@ -78,7 +78,7 @@ func cmdPhpunit(args []string) error {
 		`project root directory`)
 	fs.StringVar(&conf.SrcDir, "src-dir", "src",
 		`project sources root`)
-	fs.StringVar(&conf.KphpCommand, "kphp-binary", "",
+	fs.StringVar(&conf.KphpCommand, "kphp2cpp-binary", "",
 		`kphp binary path; if empty, $KPHP_ROOT/objs/kphp2cpp is used`)
 	fs.Parse(args)
 
@@ -112,11 +112,11 @@ func cmdPhpunit(args []string) error {
 	}
 
 	if conf.KphpCommand == "" {
-		kphpEnv := kenv.NewInfo()
-		if err := kphpEnv.FindRoot(); err != nil {
-			return err
+		kphpBinary := kenv.FindKphpBinary()
+		if kphpBinary == "" {
+			return fmt.Errorf("can't locate kphp2cpp binary; please set -kphp2cpp-binary arg")
 		}
-		conf.KphpCommand = kphpEnv.KphpBinary()
+		conf.KphpCommand = kphpBinary
 	}
 
 	result, err := phpunit.Run(conf)
