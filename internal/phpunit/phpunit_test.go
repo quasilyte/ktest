@@ -59,7 +59,7 @@ func TestPhpunit(t *testing.T) {
 		result, err := Run(&RunConfig{
 			ProjectRoot: workdir,
 			SrcDir:      "src",
-			TestTarget:  "tests",
+			TestTarget:  filepath.Join(workdir, "tests"),
 			KphpCommand: kenv.FindKphpBinary(),
 			Output:      &output,
 		})

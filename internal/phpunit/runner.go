@@ -101,20 +101,19 @@ func (r *runner) debugf(format string, args ...interface{}) {
 }
 
 func (r *runner) stepFindTestFiles() error {
-	testTarget := filepath.Join(r.conf.ProjectRoot, r.conf.TestTarget)
 
 	var testDir string
 	var testFiles []string
-	if strings.HasSuffix(testTarget, ".php") {
-		testFiles = []string{testTarget}
-		testDir = filepath.Dir(testTarget)
+	if strings.HasSuffix(r.conf.TestTarget, ".php") {
+		testFiles = []string{r.conf.TestTarget}
+		testDir = filepath.Dir(r.conf.TestTarget)
 	} else {
 		var err error
-		testFiles, err = findTestFiles(testTarget)
+		testFiles, err = findTestFiles(r.conf.TestTarget)
 		if err != nil {
 			return err
 		}
-		testDir = testTarget
+		testDir = r.conf.TestTarget
 	}
 	if !strings.HasSuffix(testDir, "/") {
 		testDir += "/"
