@@ -5,17 +5,11 @@ import (
 	"time"
 )
 
-// kphp test tests/
-// 1. find all test scripts that match the argument
-// 2. create a test main file
-// 3. compile test main file
-// 4. run test main file
-// 5. print test main script results
-
 type RunConfig struct {
 	ProjectRoot string
 	TestTarget  string
 	TestArgv    []string
+	SrcDir      string
 
 	KphpCommand string
 
@@ -33,10 +27,10 @@ type RunResult struct {
 }
 
 type TestFailure struct {
-	Name     string
-	Reason   string
-	Message  string
-	Location string
+	Name    string
+	Reason  string
+	Message string
+	File    string
 }
 
 func Run(conf *RunConfig) (*RunResult, error) {
@@ -51,7 +45,8 @@ func Run(conf *RunConfig) (*RunResult, error) {
 }
 
 type FormatConfig struct {
-	PrintTime bool
+	PrintTime     bool
+	ShortLocation bool
 }
 
 func FormatResult(w io.Writer, conf *FormatConfig, result *RunResult) {

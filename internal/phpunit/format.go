@@ -3,6 +3,7 @@ package phpunit
 import (
 	"fmt"
 	"io"
+	"path/filepath"
 )
 
 func formatResult(w io.Writer, conf *FormatConfig, result *RunResult) {
@@ -25,7 +26,11 @@ func formatResult(w io.Writer, conf *FormatConfig, result *RunResult) {
 				fmt.Fprintf(w, "%s\n", failure.Message)
 			}
 			fmt.Fprintf(w, "%s.\n\n", failure.Reason)
-			fmt.Fprintf(w, "%s\n\n", failure.Location)
+			if conf.ShortLocation {
+				fmt.Fprintf(w, "%s\n\n", filepath.Base(failure.File))
+			} else {
+				fmt.Fprintf(w, "%s\n\n", failure.File)
+			}
 		}
 		fmt.Fprintln(w, "FAILURES!")
 		fmt.Fprintf(w, "Tests: %d, Assertions: %d, Failures: %d.\n",

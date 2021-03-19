@@ -1,0 +1,22 @@
+FFF 3 / 3 (100%) FAIL
+
+There were 3 failures:
+
+1) BazTest::testEquals1
+Failed asserting that "foo" matches expected 3.
+
+BazTest.php
+
+2) BazTest::testTrue
+Failed asserting that 11 is true.
+
+BazTest.php
+
+3) BazTest::testFalse
+Failed asserting that ["a","b"] is false.
+
+BazTest.php
+
+FAILURES!
+Tests: 3, Assertions: 3, Failures: 3.
+

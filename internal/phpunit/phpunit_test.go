@@ -63,16 +63,17 @@ func TestPhpunit(t *testing.T) {
 		var output bytes.Buffer
 		result, err := Run(&RunConfig{
 			ProjectRoot: workdir,
+			SrcDir:      "src",
 			TestTarget:  "tests",
 			KphpCommand: kphpEnv.KphpBinary(),
 			Output:      &output,
-			NoCleanup:   true,
 		})
 		if err != nil {
 			t.Fatal(err)
 		}
 		formatConfig := &FormatConfig{
-			PrintTime: false,
+			PrintTime:     false,
+			ShortLocation: true,
 		}
 		FormatResult(&output, formatConfig, result)
 		have := strings.TrimSpace(output.String())

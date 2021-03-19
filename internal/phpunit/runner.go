@@ -149,7 +149,7 @@ func (r *runner) stepPrepareTempBuildDir() error {
 	r.debugf("temp build dir: %q", tempDir)
 
 	links := []string{
-		"src",
+		r.conf.SrcDir,
 		"vendor",
 		"composer.json",
 	}

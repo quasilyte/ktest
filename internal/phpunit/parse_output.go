@@ -43,10 +43,10 @@ func parseTestOutput(f *testFile, output []byte) (*testFileResult, error) {
 			reason := fmt.Sprintf("Failed asserting that %s matches expected %s",
 				jsonString(actual), jsonString(expected))
 			res.failures = append(res.failures, TestFailure{
-				Name:     f.info.ClassName + "::" + currentTest,
-				Reason:   reason,
-				Message:  message,
-				Location: f.fullName,
+				Name:    f.info.ClassName + "::" + currentTest,
+				Reason:  reason,
+				Message: message,
+				File:    f.fullName,
 			})
 		case "ASSERT_BOOL_FAILED":
 			res.asserts++
@@ -55,10 +55,10 @@ func parseTestOutput(f *testFile, output []byte) (*testFileResult, error) {
 			message := fields[3].(string)
 			reason := fmt.Sprintf("Failed asserting that %s is %s", jsonString(actual), expected)
 			res.failures = append(res.failures, TestFailure{
-				Name:     f.info.ClassName + "::" + currentTest,
-				Reason:   reason,
-				Message:  message,
-				Location: f.fullName,
+				Name:    f.info.ClassName + "::" + currentTest,
+				Reason:  reason,
+				Message: message,
+				File:    f.fullName,
 			})
 		case "ASSERT_SAME_FAILED":
 			res.asserts++
@@ -68,10 +68,10 @@ func parseTestOutput(f *testFile, output []byte) (*testFileResult, error) {
 			reason := fmt.Sprintf("Failed asserting that %s is identical to %s",
 				jsonString(actual), jsonString(expected))
 			res.failures = append(res.failures, TestFailure{
-				Name:     f.info.ClassName + "::" + currentTest,
-				Reason:   reason,
-				Message:  message,
-				Location: f.fullName,
+				Name:    f.info.ClassName + "::" + currentTest,
+				Reason:  reason,
+				Message: message,
+				File:    f.fullName,
 			})
 		default:
 			return nil, fmt.Errorf("output line %d: %s: unexpected op %s", i+1, line, op)

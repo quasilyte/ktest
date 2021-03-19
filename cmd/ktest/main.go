@@ -66,6 +66,8 @@ func cmdPhpunit(args []string) error {
 		`whether to keep temp build directory`)
 	fs.StringVar(&conf.ProjectRoot, "project-root", workdir,
 		`project root directory`)
+	fs.StringVar(&conf.SrcDir, "src-dir", "src",
+		`project sources root`)
 	fs.StringVar(&conf.KphpCommand, "kphp-binary", "",
 		`kphp binary path; if empty, $KPHP_ROOT/objs/kphp2cpp is used`)
 	fs.Parse(args)
