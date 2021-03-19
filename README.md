@@ -5,7 +5,7 @@
 `ktest` is a project that makes [kphp](https://github.com/VKCOM/kphp/) programs easier to test.
 
 * `kphp phpunit` can run [PHPUnit](https://github.com/sebastianbergmann/phpunit) tests
-* `kphp bench` runs benchmark tests (not implemented yet)
+* `kphp bench` runs benchmarking tests
 
 ## Example
 
@@ -127,7 +127,6 @@ Running with `ktest` makes it easier to ensure that your code behaves identicall
 ## TODO
 
 * Mocks
-* Benchmarks
 
 ## Limitations
 

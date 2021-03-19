@@ -101,7 +101,6 @@ func (r *runner) debugf(format string, args ...interface{}) {
 }
 
 func (r *runner) stepFindTestFiles() error {
-
 	var testDir string
 	var testFiles []string
 	if strings.HasSuffix(r.conf.TestTarget, ".php") {

@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/cespare/subcmd"
+	"github.com/quasilyte/ktest/internal/bench"
 	"github.com/quasilyte/ktest/internal/kenv"
 	"github.com/quasilyte/ktest/internal/phpunit"
 )
@@ -52,7 +53,73 @@ func envMain(args []string) {
 }
 
 func benchMain(args []string) {
-	log.Fatal("not implemented")
+	if err := cmdBench(args); err != nil {
+		log.Fatalf("ktest bench: error: %v", err)
+	}
+}
+
+func cmdBench(args []string) error {
+	conf := &bench.RunConfig{}
+
+	workdir, err := os.Getwd()
+	if err != nil {
+		return err
+	}
+
+	fs := flag.NewFlagSet("ktest phpunit", flag.ExitOnError)
+	debug := fs.Bool("debug", false,
+		`print debug info`)
+	fs.IntVar(&conf.Count, "count", 1,
+		`run each benchmark n times`)
+	fs.BoolVar(&conf.NoCleanup, "no-cleanup", false,
+		`whether to keep temp build directory`)
+	fs.StringVar(&conf.ProjectRoot, "project-root", workdir,
+		`project root directory`)
+	fs.StringVar(&conf.KphpCommand, "kphp2cpp-binary", "",
+		`kphp binary path; if empty, $KPHP_ROOT/objs/kphp2cpp is used`)
+	fs.Parse(args)
+
+	if len(fs.Args()) == 0 {
+		// TODO: print command help here?
+		log.Printf("Expected at least 1 positional argument, the benchmarking target")
+		return nil
+	}
+
+	benchTarget, err := filepath.Abs(fs.Args()[0])
+	if err != nil {
+		return fmt.Errorf("resolve benchmarking target path: %v", err)
+	}
+
+	conf.ProjectRoot, err = filepath.Abs(conf.ProjectRoot)
+	if err != nil {
+		return fmt.Errorf("resolve project root path: %v", err)
+	}
+	if !strings.HasSuffix(conf.ProjectRoot, "/") {
+		conf.ProjectRoot += "/"
+	}
+
+	conf.BenchTarget = benchTarget
+	conf.Output = os.Stdout
+
+	if *debug {
+		conf.DebugPrint = func(msg string) {
+			log.Print(msg)
+		}
+	}
+
+	if conf.KphpCommand == "" {
+		kphpBinary := kenv.FindKphpBinary()
+		if kphpBinary == "" {
+			return fmt.Errorf("can't locate kphp2cpp binary; please set -kphp2cpp-binary arg")
+		}
+		conf.KphpCommand = kphpBinary
+	}
+
+	if err := bench.Run(conf); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func phpunitMain(args []string) {
