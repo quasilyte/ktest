@@ -32,7 +32,7 @@ func TestPhpunit(t *testing.T) {
 	}
 
 	initComposer := func(t *testing.T, workdir string) {
-		if fileutil.FileExists(filepath.Join(workdir, "composer.lock")) {
+		if fileutil.FileExists(filepath.Join(workdir, "vendor")) {
 			return
 		}
 
