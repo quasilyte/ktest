@@ -1,3 +1,5 @@
+![](docs/logo_small.png)
+
 ## Overview
 
 `ktest` is a project that makes [kphp](https://github.com/VKCOM/kphp/) programs easier to test.
