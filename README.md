@@ -7,7 +7,7 @@
 * `kphp phpunit` can run [PHPUnit](https://github.com/sebastianbergmann/phpunit) tests
 * `kphp bench` runs benchmarking tests
 
-## Example
+## Example - phpunit
 
 Imagine that we have an ordinary `PHPUnit` test:
 
@@ -123,6 +123,84 @@ Tests: 1, Assertions: 1, Failures: 1.
 Accessing unset array index can yield a "zero value" instead of null.
 
 Running with `ktest` makes it easier to ensure that your code behaves identically in both PHP and KPHP.
+
+## Example - bench
+
+There are 2 main ways to do benchmarking with `bench` subcommand:
+
+1. Run different benchmarks and see how they relate
+2. Run benchmarks by the same name and compare samples with [benchstat](https://pkg.go.dev/golang.org/x/perf/cmd/benchstat?utm_source=godoc)
+
+Let's assume that you have a function that concatenates 3 strings. You can write a benchmark for it:
+
+```php
+<?php
+
+class Concat3Benchmark {
+    private static $strings = [
+        'foo',
+        'bar',
+        'baz',
+    ];
+
+    public function benchmarkConcat() {
+        return self::$strings[0] . self::$strings[1] . self::$strings[2];
+    }
+}
+```
+
+This benchmark can be executed with a `bench` subcommand:
+
+```
+$ ktest bench Concat3Benchmark.php
+BenchmarkConcat	983284	363.0 ns/op
+```
+
+Somebody proposed to re-write this function with `ob_start()` claiming that it would make things faster.
+
+First, we need to collect samples of the current implementation. We need at least 5 rounds, but usually the more - the better (don't get too crazy though, 10 is good enough in most cases).
+
+```
+$ ktest bench -count 5 Concat3Benchmark.php | tee old.txt
+```
+
+Now we have old implementation results, it's time to roll the a implementation:
+
+```php
+<?php
+
+class Concat3Benchmark {
+    private static $strings = [
+        'foo',
+        'bar',
+        'baz',
+    ];
+
+    public function benchmarkConcat() {
+        ob_start();
+        echo self::$strings[0];
+        echo self::$strings[1];
+        echo self::$strings[2];
+        return ob_get_clean();
+    }
+}
+```
+
+Now we need to collect the new implementation results:
+
+```
+$ ktest bench -count 5 Concat3Benchmark.php | tee new.txt
+```
+
+When you have 2 sets of samples, it's possible to compare them with benchstat:
+
+```
+$ benchstat old.txt new.txt
+name    old time/op  new time/op  delta
+Concat   372ns ± 2%   546ns ± 6%  +46.91%  (p=0.008 n=5+5)
+```
+
+As we can see, the new implementation is, in fact, almost 2 times slower!
 
 ## TODO
 
