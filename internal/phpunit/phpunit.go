@@ -31,6 +31,7 @@ type TestFailure struct {
 	Reason  string
 	Message string
 	File    string
+	Line    int
 }
 
 func Run(conf *RunConfig) (*RunResult, error) {

@@ -1,6 +1,7 @@
 package phpunit
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/z7zmey/php-parser/pkg/ast"
@@ -12,6 +13,33 @@ type astVisitor struct {
 	out *testParsedInfo
 
 	currentClass string
+}
+
+func (v *astVisitor) ExprMethodCall(n *ast.ExprMethodCall) {
+	if v.currentClass != v.out.ClassName {
+		return
+	}
+	object, ok := n.Var.(*ast.ExprVariable)
+	if !ok {
+		return
+	}
+	objectVar, ok := object.Name.(*ast.Identifier)
+	if !ok || string(objectVar.Value) != "$this" {
+		return
+	}
+	methodName, ok := n.Method.(*ast.Identifier)
+	if !ok {
+		return
+	}
+	switch string(methodName.Value) {
+	case "assertTrue", "assertFalse", "assertSame", "assertEquals":
+		lineMethodName := string(methodName.Value) + "WithLine"
+		v.out.fixes = append(v.out.fixes, textEdit{
+			StartPos:    methodName.GetPosition().StartPos,
+			EndPos:      n.OpenParenthesisTkn.GetPosition().EndPos,
+			Replacement: fmt.Sprintf("%s(__LINE__, ", lineMethodName),
+		})
+	}
 }
 
 func (v *astVisitor) StmtUse(n *ast.StmtUseList) {

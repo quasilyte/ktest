@@ -7,7 +7,6 @@
 
 ## TODO
 
-* Failed assertions line info
 * Mocks
 * Benchmarks
 

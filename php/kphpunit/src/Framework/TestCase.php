@@ -8,10 +8,19 @@ class TestCase {
      * @param string $message
      */
     public function assertTrue($condition, string $message = '') {
+        TestCase::assertTrueWithLine($condition, $message);
+    }
+
+    /**
+     * @param int $line
+     * @param mixed $condition
+     * @param string $message
+     */
+    public function assertTrueWithLine(int $line, $condition, string $message = '') {
         if ($condition === true) {
             TestCase::ok();
         } else {
-            TestCase::fail('BOOL', 'true', $condition, $message);
+            TestCase::fail('BOOL', 'true', $condition, $message, $line);
         }
     }
 
@@ -20,10 +29,19 @@ class TestCase {
      * @param string $message
      */
     public function assertFalse($condition, string $message = '') {
+        TestCase::assertFalseWithLine(0, $condition, $message);
+    }
+
+    /**
+     * @param int $line
+     * @param mixed $condition
+     * @param string $message
+     */
+    public function assertFalseWithLine(int $line, $condition, string $message = '') {
         if ($condition === false) {
             TestCase::ok();
         } else {
-            TestCase::fail('BOOL', 'false', $condition, $message);
+            TestCase::fail('BOOL', 'false', $condition, $message, $line);
         }
     }
 
@@ -33,10 +51,20 @@ class TestCase {
      * @param string $message
      */
     public function assertSame($expected, $actual, string $message = '') {
+        TestCase::assertSameWithLine(0, $expected, $actual, $message);
+    }
+
+    /**
+     * @param int $line
+     * @param mixed $expected
+     * @param mixed $actual
+     * @param string $message
+     */
+    public function assertSameWithLine(int $line, $expected, $actual, string $message = '') {
         if (TestCase::checkIdentical($expected, $actual)) {
             TestCase::ok();
         } else {
-            TestCase::fail('SAME', $expected, $actual, $message);
+            TestCase::fail('SAME', $expected, $actual, $message, $line);
         }
     }
 
@@ -46,6 +74,16 @@ class TestCase {
      * @param string $message
      */
     public function assertEquals($expected, $actual, string $message = '') {
+        TestCase::assertEqualsWithLine(0, $expected, $actual, $message);
+    }
+
+    /**
+     * @param int $line
+     * @param mixed $expected
+     * @param mixed $actual
+     * @param string $message
+     */
+    public function assertEqualsWithLine(int $line, $expected, $actual, string $message = '') {
         // TODO: array comparator.
         $result = false;
         if (TestCase::compareAsEqualNumeric($expected, $actual)) {
@@ -59,7 +97,7 @@ class TestCase {
         if ($result) {
             TestCase::ok();
         } else {
-            TestCase::fail('EQUALS', $expected, $actual, $message);
+            TestCase::fail('EQUALS', $expected, $actual, $message, $line);
         }
     }
 
@@ -131,9 +169,10 @@ class TestCase {
      * @param mixed $expected
      * @param mixed $actual
      * @param string $message
+     * @param int $line
      */
-    private static function fail(string $kind, $expected, $actual, string $message) {
-        echo json_encode(["ASSERT_{$kind}_FAILED", $expected, $actual, $message]) . "\n";
+    private static function fail(string $kind, $expected, $actual, string $message, int $line) {
+        echo json_encode(["ASSERT_{$kind}_FAILED", $expected, $actual, $message, $line]) . "\n";
         throw new AssertionFailedException();
     }
 

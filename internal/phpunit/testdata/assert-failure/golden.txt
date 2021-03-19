@@ -5,18 +5,17 @@ There were 3 failures:
 1) BazTest::testEquals1
 Failed asserting that "foo" matches expected 3.
 
-BazTest.php
+BazTest.php:9
 
 2) BazTest::testTrue
 Failed asserting that 11 is true.
 
-BazTest.php
+BazTest.php:14
 
 3) BazTest::testFalse
 Failed asserting that ["a","b"] is false.
 
-BazTest.php
+BazTest.php:18
 
 FAILURES!
 Tests: 3, Assertions: 3, Failures: 3.
-
