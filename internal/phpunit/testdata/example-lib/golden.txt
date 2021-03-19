@@ -1,5 +1,4 @@
-... 3 / 5 (60%) OK
-.. 5 / 5 (100%) OK
+.... 4 / 7 (57%) OK
+... 7 / 7 (100%) OK
 
-OK (5 tests, 11 assertions)
-
+OK (7 tests, 19 assertions)

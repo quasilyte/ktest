@@ -35,6 +35,31 @@ func parseTestOutput(f *testFile, output []byte) (*testFileResult, error) {
 			res.asserts++
 		case "FINISHED":
 			res.finished = true
+		case "ASSERT_EQUALS_FAILED":
+			res.asserts++
+			expected := fields[1]
+			actual := fields[2]
+			message := fields[3].(string)
+			reason := fmt.Sprintf("Failed asserting that %s matches expected %s",
+				jsonString(actual), jsonString(expected))
+			res.failures = append(res.failures, TestFailure{
+				Name:     f.info.ClassName + "::" + currentTest,
+				Reason:   reason,
+				Message:  message,
+				Location: f.fullName,
+			})
+		case "ASSERT_BOOL_FAILED":
+			res.asserts++
+			expected := fields[1]
+			actual := fields[2]
+			message := fields[3].(string)
+			reason := fmt.Sprintf("Failed asserting that %s is %s", jsonString(actual), expected)
+			res.failures = append(res.failures, TestFailure{
+				Name:     f.info.ClassName + "::" + currentTest,
+				Reason:   reason,
+				Message:  message,
+				Location: f.fullName,
+			})
 		case "ASSERT_SAME_FAILED":
 			res.asserts++
 			expected := fields[1]

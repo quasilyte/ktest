@@ -3,6 +3,10 @@
 namespace ExampleLib;
 
 class Strings {
+    public static function join($parts, $sep): string {
+        return implode($sep, $parts);
+    }
+
     public static function contains($s, $substr): bool {
         return '' === $substr || false !== strpos($s, $substr);
     }

@@ -10,3 +10,4 @@ TODO.
 ## Limitations
 
 * Assert functions can't be used for objects (class instances)
+* No custom comparators for assert functions

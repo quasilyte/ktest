@@ -11,6 +11,16 @@ class Arrays {
         return !self::isList($array);
     }
 
+    public static function countStringKeys(array $array): int {
+        $n = 0;
+        foreach ($array as $k => $_) {
+            if (is_string($k)) {
+                $n++;
+            }
+        }
+        return $n;
+    }
+
     /**
      * @param array[] $array
      * @return array

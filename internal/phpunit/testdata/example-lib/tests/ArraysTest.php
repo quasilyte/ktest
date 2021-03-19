@@ -19,4 +19,10 @@ class ArraysTest extends TestCase {
     public function testFlatten() {
         $this->assertSame([1, 2, 3], Arrays::flatten([[1], [2], [3]]));
     }
+
+    public function testCountStringKeys() {
+        $this->assertEquals(0, Arrays::countStringKeys([3 => 2]));
+        $this->assertEquals(1, Arrays::countStringKeys(['x' => 4, 3 => 2]));
+        $this->assertEquals(2, Arrays::countStringKeys(['x' => 4, 'y' => 2]));
+    }
 }

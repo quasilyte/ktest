@@ -78,7 +78,7 @@ func TestPhpunit(t *testing.T) {
 		have := strings.TrimSpace(output.String())
 		want := strings.TrimSpace(string(goldenData))
 		if have != want {
-			t.Errorf("output mismatches:\nhave: %s\nwant: %s", have, want)
+			t.Errorf("output mismatches:\nhave:\n%s\nwant:\n%s", have, want)
 		}
 	}
 
