@@ -194,8 +194,9 @@ func (r *runner) stepGenerateBenchMain() error {
 			"BenchFilename":  f.fullName,
 			"BenchClassName": f.info.ClassName,
 			"BenchMethods":   f.info.BenchMethods,
+			"Unroll":         make([]struct{}, 20),
 		}
-		if err := testMainTemplate.Execute(&generated, templateData); err != nil {
+		if err := benchMainTemplate.Execute(&generated, templateData); err != nil {
 			return fmt.Errorf("%s: %w", f.fullName, err)
 		}
 		f.generatedMain = generated.Bytes()
@@ -204,30 +205,34 @@ func (r *runner) stepGenerateBenchMain() error {
 	return nil
 }
 
-var testMainTemplate = template.Must(template.New("test_main").Parse(`<?php
+var benchMainTemplate = template.Must(template.New("bench_main").Parse(`<?php
 
 require_once '{{.BenchFilename}}';
 
-function run_test({{.BenchClassName}} $bench) {
-  
-}
-
 function __kphpbench_main() {
   $bench = new {{.BenchClassName}}();
-  {{range .BenchMethods}}
 
-  fprintf(STDERR, "{{.Key}}\t");
+  {{range $bench := .BenchMethods}}
+
+  fprintf(STDERR, "{{$bench.Key}}\t");
   $run1_start = hrtime(true);
-  $bench->{{.Name}}();
+  $bench->{{$bench.Name}}();
   $run1_end = hrtime(true);
   $op_time_approx = $run1_end - $run1_start;
   $num_tries = (int)(1000000000 / $op_time_approx);
+  if ($num_tries < 40) {
+    $num_tries = 40;
+  }
   $time_total = 0;
-  for ($i = 0; $i < $num_tries; $i++) {
-	$start = hrtime(true);
-	$bench->{{.Name}}();
-	$elapsed = hrtime(true) - $start;
-	$time_total += $elapsed;
+  for ($i = 0; $i < $num_tries; $i += {{len $.Unroll}}) {
+    $start = hrtime(true);
+    {{ range $.Unroll}}
+    $bench->{{$bench.Name}}();
+    {{- end}}
+    $elapsed = hrtime(true) - $start;
+    if ($elapsed > 0) {
+      $time_total += $elapsed;
+    }
   }
   $avg_time = (int)($time_total / $num_tries);
   fprintf(STDERR, "$num_tries\t$avg_time.0 ns/op\n");
