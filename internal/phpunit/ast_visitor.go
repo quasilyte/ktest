@@ -32,7 +32,7 @@ func (v *astVisitor) ExprMethodCall(n *ast.ExprMethodCall) {
 		return
 	}
 	switch string(methodName.Value) {
-	case "assertTrue", "assertFalse", "assertSame", "assertEquals":
+	case "assertTrue", "assertFalse", "assertSame", "assertNotSame", "assertEquals":
 		lineMethodName := string(methodName.Value) + "WithLine"
 		v.out.fixes = append(v.out.fixes, textEdit{
 			StartPos:    methodName.GetPosition().StartPos,

@@ -64,6 +64,21 @@ func parseTestOutput(f *testFile, output []byte) (*testFileResult, error) {
 				File:    f.fullName,
 				Line:    int(line),
 			})
+		case "ASSERT_NOT_SAME_FAILED":
+			res.asserts++
+			expected := fields[1]
+			actual := fields[2]
+			message := fields[3].(string)
+			line := fields[4].(float64)
+			reason := fmt.Sprintf("Failed asserting that %s is not identical to %s",
+				jsonString(actual), jsonString(expected))
+			res.failures = append(res.failures, TestFailure{
+				Name:    f.info.ClassName + "::" + currentTest,
+				Reason:  reason,
+				Message: message,
+				File:    f.fullName,
+				Line:    int(line),
+			})
 		case "ASSERT_SAME_FAILED":
 			res.asserts++
 			expected := fields[1]
