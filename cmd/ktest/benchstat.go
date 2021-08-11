@@ -71,7 +71,7 @@ func cmdBenchstat(args []string) error {
 		}
 		c.Order = order
 	}
-	for _, file := range flag.Args() {
+	for _, file := range fs.Args() {
 		f, err := os.Open(file)
 		if err != nil {
 			return err
