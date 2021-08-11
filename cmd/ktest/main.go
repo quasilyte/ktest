@@ -77,6 +77,8 @@ func cmdBench(args []string) error {
 		`project root directory`)
 	fs.StringVar(&conf.KphpCommand, "kphp2cpp-binary", "",
 		`kphp binary path; if empty, $KPHP_ROOT/objs/kphp2cpp is used`)
+	fs.StringVar(&conf.PhpCommand, "php", "",
+		`if non-empty, run benchmarks using the specified PHP command`)
 	fs.Parse(args)
 
 	if len(fs.Args()) == 0 {

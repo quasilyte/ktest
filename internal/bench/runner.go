@@ -79,7 +79,7 @@ func (r *runner) Run() error {
 		{"filter only parsed files", r.stepFilterOnlyParsedFiles},
 		{"sort bench files", r.stepSortBenchFiles},
 		{"generate bench main", r.stepGenerateBenchMain},
-		{"run kphp tests", r.stepRunKphpBench},
+		{"run bench", r.stepRunBench},
 	}
 
 	for _, step := range steps {
@@ -149,11 +149,11 @@ func (r *runner) stepParseBenchFiles() error {
 			Version:          &version.Version{Major: 5, Minor: 6},
 			ErrorHandlerFunc: errorHandler,
 		})
-		if len(parserErrors) != 0 {
+		if err != nil || len(parserErrors) != 0 {
 			for _, parseErr := range parserErrors {
 				log.Printf("%s: parse error: %v", f.fullName, parseErr)
 			}
-			continue
+			return err
 		}
 		f.info = &benchParsedInfo{}
 		visitor := &astVisitor{out: f.info}
@@ -243,7 +243,37 @@ function __kphpbench_main() {
 __kphpbench_main();
 `))
 
-func (r *runner) stepRunKphpBench() error {
+func (r *runner) runPhpBench() error {
+	for _, f := range r.benchFiles {
+		mainFilename := filepath.Join(r.buildDir, "main.php")
+		if err := fileutil.WriteFile(mainFilename, f.generatedMain); err != nil {
+			return err
+		}
+
+		for i := 0; i < r.conf.Count; i++ {
+			args := []string{
+				"-f", mainFilename,
+			}
+			runCommand := exec.Command(r.conf.PhpCommand, args...)
+			runCommand.Dir = r.buildDir
+			var runStdout bytes.Buffer
+			runCommand.Stderr = r.conf.Output
+			runCommand.Stdout = &runStdout
+			if err := runCommand.Run(); err != nil {
+				log.Printf("%s: run error: %v", f.fullName, err)
+				continue
+			}
+		}
+	}
+
+	return nil
+}
+
+func (r *runner) stepRunBench() error {
+	if r.conf.PhpCommand != "" {
+		return r.runPhpBench()
+	}
+
 	composerMode := fileutil.FileExists(filepath.Join(r.conf.ProjectRoot, "composer.json"))
 
 	for _, f := range r.benchFiles {
@@ -282,25 +312,7 @@ func (r *runner) stepRunKphpBench() error {
 				continue
 			}
 		}
-
-		// 3. Parse output.
-		// parsed, err := parseTestOutput(f, runStdout.Bytes())
-		// if err != nil {
-		// 	log.Printf("%s: parse test output: %v", f.fullName, err)
-		// 	continue
-		// }
-
-		// status := "OK"
-		// if len(parsed.failures) != 0 {
-		// 	status = "FAIL"
-		// }
-		// completed := float64(testsCompleted) / float64(testsTotal) * 100.0
-		// fmt.Fprintf(r.conf.Output, " %d / %d (%2d%%) %s\n", testsCompleted, testsTotal, int(completed), status)
-
-		// r.result.Failures = append(r.result.Failures, parsed.failures...)
-		// r.result.Assertions += parsed.asserts
 	}
-	// r.result.Tests = testsCompleted
 
 	return nil
 }

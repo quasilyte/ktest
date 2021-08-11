@@ -9,6 +9,7 @@ type RunConfig struct {
 	BenchTarget string
 
 	KphpCommand string
+	PhpCommand  string
 
 	Count int
 
