@@ -1,13 +1,6 @@
 {
-    "repositories": [
-        {
-            "type": "path",
-            "url": "../../../../php/kphpunit"
-        }
-    ],
     "require": {
-        "quasilyte/kphpunit": "1.0.0",
-        "phpunit/phpunit": "^8.5"
+        "quasilyte/kphpunit": "dev-master"
     },
     "autoload": {
         "psr-4": {

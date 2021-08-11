@@ -2,6 +2,7 @@ package phpunit
 
 import (
 	"bytes"
+	"fmt"
 	"io/ioutil"
 	"os/exec"
 	"path/filepath"
@@ -31,17 +32,12 @@ func TestPhpunit(t *testing.T) {
 			return
 		}
 
-		composerRequireCommand := exec.Command("composer", "require", "phpunit/phpunit")
-		composerRequireCommand.Dir = workdir
-		t.Log(composerRequireCommand.String())
-		if err := composerRequireCommand.Run(); err != nil {
-			t.Fatalf("run %s: %v", composerRequireCommand, err)
-		}
 		composerInstallCommand := exec.Command("composer", "install")
 		composerInstallCommand.Dir = workdir
 		t.Log(composerInstallCommand.String())
-		if err := composerInstallCommand.Run(); err != nil {
-			t.Fatalf("run %s: %v", composerInstallCommand, err)
+		out, err := composerInstallCommand.CombinedOutput()
+		if err != nil {
+			t.Fatalf("run %s: %s: %v", composerInstallCommand, out, err)
 		}
 	}
 
@@ -74,7 +70,9 @@ func TestPhpunit(t *testing.T) {
 		have := strings.TrimSpace(output.String())
 		want := strings.TrimSpace(string(goldenData))
 		if have != want {
-			t.Errorf("output mismatches:\nhave:\n%s\nwant:\n%s", have, want)
+			t.Errorf("output mismatches!")
+			fmt.Printf("have:\n%s\n", have)
+			fmt.Printf("want:\n%s\n", want)
 		}
 	}
 
