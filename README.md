@@ -57,6 +57,8 @@ Time: 10.74657386s
 OK (6 tests, 14 assertions)
 ```
 
+> Note that running KPHP tests is slower: a separate binary is compiled per every Test class.
+
 All you need is `ktest` utility and installed [kphpunit](https://github.com/quasilyte/kphpunit) package:
 
 ```bash
