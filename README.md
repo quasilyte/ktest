@@ -57,6 +57,12 @@ Time: 10.74657386s
 OK (6 tests, 14 assertions)
 ```
 
+All you need is `ktest` utility and installed [kphpunit](https://github.com/quasilyte/kphpunit) package:
+
+```bash
+$ composer require --dev quasilyte/kphpunit
+```
+
 Now let's do something more exciting.
 
 Take a look at this `Integers::getFirst` method:
