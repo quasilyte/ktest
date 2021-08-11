@@ -297,6 +297,8 @@ func (r *runner) stepWriteTestMain() error {
 }
 
 func (r *runner) stepRunKphpTests() error {
+	composerMode := fileutil.FileExists(filepath.Join(r.conf.ProjectRoot, "composer.json"))
+
 	testsTotal := 0
 	for _, f := range r.testFiles {
 		testsTotal += len(f.info.TestMethods)
@@ -309,9 +311,12 @@ func (r *runner) stepRunKphpTests() error {
 		// 1. Build.
 		args := []string{
 			"--mode", "cli",
-			"--composer-root", r.buildDir,
-			f.mainFilename,
+			"--destination-directory", r.buildDir,
 		}
+		if composerMode {
+			args = append(args, "--composer-root", r.conf.ProjectRoot)
+		}
+		args = append(args, f.mainFilename)
 		buildCommand := exec.Command(r.conf.KphpCommand, args...)
 		buildCommand.Dir = r.buildDir
 		out, err := buildCommand.CombinedOutput()

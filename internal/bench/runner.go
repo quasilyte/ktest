@@ -244,6 +244,8 @@ __kphpbench_main();
 `))
 
 func (r *runner) stepRunKphpBench() error {
+	composerMode := fileutil.FileExists(filepath.Join(r.conf.ProjectRoot, "composer.json"))
+
 	for _, f := range r.benchFiles {
 		mainFilename := filepath.Join(r.buildDir, "main.php")
 		if err := fileutil.WriteFile(mainFilename, f.generatedMain); err != nil {
@@ -253,10 +255,12 @@ func (r *runner) stepRunKphpBench() error {
 		// 1. Build.
 		args := []string{
 			"--mode", "cli",
-			"--composer-root", r.conf.ProjectRoot,
 			"--destination-directory", r.buildDir,
-			mainFilename,
 		}
+		if composerMode {
+			args = append(args, "--composer-root", r.conf.ProjectRoot)
+		}
+		args = append(args, mainFilename)
 		buildCommand := exec.Command(r.conf.KphpCommand, args...)
 		buildCommand.Dir = r.buildDir
 		out, err := buildCommand.CombinedOutput()
