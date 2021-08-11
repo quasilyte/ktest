@@ -25,9 +25,27 @@ func main() {
 		},
 
 		{
+			Name:        "benchstat",
+			Description: "compute and compare statistics about benchmark results",
+			Do:          benchstatMain,
+		},
+
+		{
 			Name:        "bench",
-			Description: "run benchmark tests",
+			Description: "run benchmarks using KPHP",
 			Do:          benchMain,
+		},
+
+		{
+			Name:        "bench-php",
+			Description: "run benchmarks using PHP",
+			Do:          benchPHPMain,
+		},
+
+		{
+			Name:        "bench-vs-php",
+			Description: "run benchmarks using both KPHP and PHP, compare the results",
+			Do:          benchVsPHPMain,
 		},
 
 		{
@@ -52,13 +70,35 @@ func envMain(args []string) {
 	}
 }
 
+func benchstatMain(args []string) {
+	if err := cmdBenchstat(args); err != nil {
+		log.Fatalf("ktest benchstat: error: %v", err)
+	}
+}
+
 func benchMain(args []string) {
 	if err := cmdBench(args); err != nil {
 		log.Fatalf("ktest bench: error: %v", err)
 	}
 }
 
-func cmdBench(args []string) error {
+func benchPHPMain(args []string) {
+	if err := cmdBenchPHP(args); err != nil {
+		log.Fatalf("ktest bench-php: error: %v", err)
+	}
+}
+
+func benchVsPHPMain(args []string) {
+	if err := cmdBenchVsPHP(args); err != nil {
+		log.Fatalf("ktest bench-vs-php: error: %v", err)
+	}
+}
+
+func cmdBenchVsPHP(args []string) error {
+	return benchmarkVsPHP(args)
+}
+
+func cmdBenchPHP(args []string) error {
 	conf := &bench.RunConfig{}
 
 	workdir, err := os.Getwd()
@@ -66,7 +106,7 @@ func cmdBench(args []string) error {
 		return err
 	}
 
-	fs := flag.NewFlagSet("ktest phpunit", flag.ExitOnError)
+	fs := flag.NewFlagSet("ktest bench-php", flag.ExitOnError)
 	debug := fs.Bool("debug", false,
 		`print debug info`)
 	fs.IntVar(&conf.Count, "count", 1,
@@ -75,10 +115,8 @@ func cmdBench(args []string) error {
 		`whether to keep temp build directory`)
 	fs.StringVar(&conf.ProjectRoot, "project-root", workdir,
 		`project root directory`)
-	fs.StringVar(&conf.KphpCommand, "kphp2cpp-binary", "",
-		`kphp binary path; if empty, $KPHP_ROOT/objs/kphp2cpp is used`)
-	fs.StringVar(&conf.PhpCommand, "php", "",
-		`if non-empty, run benchmarks using the specified PHP command`)
+	fs.StringVar(&conf.PhpCommand, "php", "php",
+		`PHP command to run the benchmarks`)
 	fs.Parse(args)
 
 	if len(fs.Args()) == 0 {
@@ -92,21 +130,66 @@ func cmdBench(args []string) error {
 		return fmt.Errorf("resolve benchmarking target path: %v", err)
 	}
 
+	conf.BenchTarget = benchTarget
+	conf.Output = os.Stdout
+	if *debug {
+		conf.DebugPrint = func(msg string) {
+			log.Print(msg)
+		}
+	}
+	return benchCmdImpl(conf)
+}
+
+func cmdBench(args []string) error {
+	conf := &bench.RunConfig{}
+
+	workdir, err := os.Getwd()
+	if err != nil {
+		return err
+	}
+
+	fs := flag.NewFlagSet("ktest bench", flag.ExitOnError)
+	debug := fs.Bool("debug", false,
+		`print debug info`)
+	fs.IntVar(&conf.Count, "count", 1,
+		`run each benchmark n times`)
+	fs.BoolVar(&conf.NoCleanup, "no-cleanup", false,
+		`whether to keep temp build directory`)
+	fs.StringVar(&conf.ProjectRoot, "project-root", workdir,
+		`project root directory`)
+	fs.StringVar(&conf.KphpCommand, "kphp2cpp-binary", "",
+		`kphp binary path; if empty, $KPHP_ROOT/objs/kphp2cpp is used`)
+	fs.Parse(args)
+
+	if len(fs.Args()) == 0 {
+		// TODO: print command help here?
+		log.Printf("Expected at least 1 positional argument, the benchmarking target")
+		return nil
+	}
+
+	benchTarget, err := filepath.Abs(fs.Args()[0])
+	if err != nil {
+		return fmt.Errorf("resolve benchmarking target path: %v", err)
+	}
+
+	conf.BenchTarget = benchTarget
+	conf.Output = os.Stdout
+	if *debug {
+		conf.DebugPrint = func(msg string) {
+			log.Print(msg)
+		}
+	}
+	return benchCmdImpl(conf)
+}
+
+func benchCmdImpl(conf *bench.RunConfig) error {
+	var err error
 	conf.ProjectRoot, err = filepath.Abs(conf.ProjectRoot)
 	if err != nil {
 		return fmt.Errorf("resolve project root path: %v", err)
 	}
 	if !strings.HasSuffix(conf.ProjectRoot, "/") {
 		conf.ProjectRoot += "/"
-	}
-
-	conf.BenchTarget = benchTarget
-	conf.Output = os.Stdout
-
-	if *debug {
-		conf.DebugPrint = func(msg string) {
-			log.Print(msg)
-		}
 	}
 
 	if conf.KphpCommand == "" {
