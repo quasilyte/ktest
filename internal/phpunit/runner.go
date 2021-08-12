@@ -184,7 +184,7 @@ func (r *runner) stepParseTestFiles() error {
 			parserErrors = append(parserErrors, e)
 		}
 		rootNode, err := parser.Parse(src, conf.Config{
-			Version:          &version.Version{Major: 5, Minor: 6},
+			Version:          &version.Version{Major: 7, Minor: 4},
 			ErrorHandlerFunc: errorHandler,
 		})
 		if len(parserErrors) != 0 {
@@ -326,7 +326,7 @@ func (r *runner) stepRunKphpTests() error {
 		}
 
 		// 2. Run.
-		executableName := filepath.Join(r.buildDir, "kphp_out", "cli")
+		executableName := filepath.Join(r.buildDir, "cli")
 		runCommand := exec.Command(executableName)
 		runCommand.Dir = r.buildDir
 		var runStdout bytes.Buffer

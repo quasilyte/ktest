@@ -157,7 +157,7 @@ func (r *runner) stepParseBenchFiles() error {
 			parserErrors = append(parserErrors, e)
 		}
 		rootNode, err := parser.Parse(src, conf.Config{
-			Version:          &version.Version{Major: 5, Minor: 6},
+			Version:          &version.Version{Major: 7, Minor: 4},
 			ErrorHandlerFunc: errorHandler,
 		})
 		if err != nil || len(parserErrors) != 0 {
