@@ -276,7 +276,7 @@ func (r *runner) runPhpBench() error {
 			runCommand.Stdout = &runStdout
 			if err := runCommand.Run(); err != nil {
 				log.Printf("%s: run error: %v", f.fullName, err)
-				continue
+				return fmt.Errorf("error running %s", f.fullName)
 			}
 		}
 	}
@@ -309,7 +309,7 @@ func (r *runner) stepRunBench() error {
 		out, err := buildCommand.CombinedOutput()
 		if err != nil {
 			log.Printf("%s: build error: %v: %s", f.fullName, err, out)
-			continue
+			return fmt.Errorf("can't build %s", f.fullName)
 		}
 
 		// 2. Run.
@@ -322,7 +322,7 @@ func (r *runner) stepRunBench() error {
 			runCommand.Stdout = &runStdout
 			if err := runCommand.Run(); err != nil {
 				log.Printf("%s: run error: %v", f.fullName, err)
-				continue
+				return fmt.Errorf("error running %s", f.fullName)
 			}
 		}
 	}
