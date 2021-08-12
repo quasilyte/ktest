@@ -41,9 +41,10 @@ func benchmarkVsPHP(args []string) error {
 
 	runBenchWithProgress := func(label, command string, args []string) ([]byte, error) {
 		cmd := exec.Command(command, args...)
-		var out bytes.Buffer
-		cmd.Stdout = &out
-		cmd.Stderr = &out
+		var stdout bytes.Buffer
+		var stderr bytes.Buffer
+		cmd.Stdout = &stdout
+		cmd.Stderr = &stderr
 		completed := 0
 		ch := make(chan error)
 		ticker := time.NewTicker(1 * time.Second)
@@ -54,11 +55,12 @@ func benchmarkVsPHP(args []string) error {
 			select {
 			case err := <-ch:
 				if err != nil {
-					return nil, fmt.Errorf("run %s benchmarks: %v: %s", label, err, out.String())
+					combined := append(stderr.Bytes(), stdout.Bytes()...)
+					return nil, fmt.Errorf("run %s benchmarks: %v: %s", label, err, combined)
 				}
-				return out.Bytes(), nil
+				return stdout.Bytes(), nil
 			case <-ticker.C:
-				lines := bytes.Count(out.Bytes(), []byte("\n"))
+				lines := bytes.Count(stdout.Bytes(), []byte("\n"))
 				if completed != lines {
 					completed = lines
 					printProgress("running %s benchmarks: got %d samples...", label, completed)
