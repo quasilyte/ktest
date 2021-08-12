@@ -20,7 +20,7 @@ func main() {
 	cmds := []subcmd.Command{
 		{
 			Name:        "phpunit",
-			Description: "run phpunit tests",
+			Description: "run phpunit tests using KPHP",
 			Do:          phpunitMain,
 		},
 
