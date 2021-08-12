@@ -2,10 +2,14 @@
 
 ## Overview
 
-`ktest` is a project that makes [kphp](https://github.com/VKCOM/kphp/) programs easier to test.
+`ktest` is a tool that makes [kphp](https://github.com/VKCOM/kphp/) programs easier to test.
 
-* `kphp phpunit` can run [PHPUnit](https://github.com/sebastianbergmann/phpunit) tests
-* `kphp bench` runs benchmarking tests
+* `ktest phpunit` can run [PHPUnit](https://github.com/sebastianbergmann/phpunit) tests
+* `ktest bench` run benchmarks using KPHP
+* `ktest bench-php` run benchmarks using PHP
+* `ktest bench-vs-php` run benchmarks using both KPHP and PHP, compare the results
+* `ktest benchstat` compute and compare statistics about benchmark results (see [benchstat](https://godoc.org/golang.org/x/perf/cmd/benchstat))
+* `ktest env` print ktest-related env variables information
 
 ## Example - phpunit
 
