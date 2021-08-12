@@ -34,6 +34,11 @@ func benchmarkVsPHP(args []string) error {
 		printProgress("")
 	}
 
+	// In case error occurs, we want to clear all progress-related text.
+	defer func() {
+		flushProgress()
+	}()
+
 	runBenchWithProgress := func(label, command string, args []string) ([]byte, error) {
 		cmd := exec.Command(command, args...)
 		var out bytes.Buffer
