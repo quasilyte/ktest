@@ -8,6 +8,7 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"time"
 )
 
 func benchmarkVsPHP(args []string) error {
@@ -25,7 +26,41 @@ func benchmarkVsPHP(args []string) error {
 
 	benchTarget := fs.Args()[0]
 
-	_ = flagPhpCommand
+	printProgress := func(format string, args ...interface{}) {
+		msg := fmt.Sprintf(format, args...)
+		fmt.Fprintf(os.Stderr, "\033[2K\r%s", msg)
+	}
+	flushProgress := func() {
+		printProgress("")
+	}
+
+	runBenchWithProgress := func(label, command string, args []string) ([]byte, error) {
+		cmd := exec.Command(command, args...)
+		var out bytes.Buffer
+		cmd.Stdout = &out
+		cmd.Stderr = &out
+		completed := 0
+		ch := make(chan error)
+		ticker := time.NewTicker(1 * time.Second)
+		go func() {
+			ch <- cmd.Run()
+		}()
+		for {
+			select {
+			case err := <-ch:
+				if err != nil {
+					return nil, fmt.Errorf("run %s benchmarks: %v: %s", label, err, out.String())
+				}
+				return out.Bytes(), nil
+			case <-ticker.C:
+				lines := bytes.Count(out.Bytes(), []byte("\n"))
+				if completed != lines {
+					completed = lines
+					printProgress("running %s benchmarks: got %d samples...", label, completed)
+				}
+			}
+		}
+	}
 
 	var createdFiles []string
 	defer func() {
@@ -52,6 +87,7 @@ func benchmarkVsPHP(args []string) error {
 	var kphpResultsFile string
 	var phpResultsFile string
 
+	printProgress("compiling KPHP benchmarks...")
 	{
 		args := []string{
 			"bench",
@@ -61,9 +97,9 @@ func benchmarkVsPHP(args []string) error {
 			args = append(args, "--kphp2cpp-binary", *flagKphpCommand)
 		}
 		args = append(args, benchTarget)
-		out, err := exec.Command(os.Args[0], args...).CombinedOutput()
+		out, err := runBenchWithProgress("KPHP", os.Args[0], args)
 		if err != nil {
-			return fmt.Errorf("run KPHP benchmarks: %v: %s", err, out)
+			return err
 		}
 		filename, err := createTempFile(out)
 		if err != nil {
@@ -72,6 +108,7 @@ func benchmarkVsPHP(args []string) error {
 		kphpResultsFile = filename
 	}
 
+	printProgress("running PHP benchmarks...")
 	{
 		args := []string{
 			"bench-php",
@@ -81,9 +118,9 @@ func benchmarkVsPHP(args []string) error {
 			args = append(args, "--php", *flagPhpCommand)
 		}
 		args = append(args, benchTarget)
-		out, err := exec.Command(os.Args[0], args...).CombinedOutput()
+		out, err := runBenchWithProgress("PHP", os.Args[0], args)
 		if err != nil {
-			return fmt.Errorf("run PHP benchmarks: %v: %s", err, out)
+			return err
 		}
 		filename, err := createTempFile(out)
 		if err != nil {
@@ -92,6 +129,7 @@ func benchmarkVsPHP(args []string) error {
 		phpResultsFile = filename
 	}
 
+	printProgress("running benchstat...")
 	{
 		args := []string{
 			"benchstat",
@@ -104,6 +142,7 @@ func benchmarkVsPHP(args []string) error {
 		}
 		out = bytes.Replace(out, []byte("old time"), []byte("PHP time"), 1)
 		out = bytes.Replace(out, []byte("new time"), []byte("KPHP time"), 1)
+		flushProgress()
 		fmt.Print(string(out))
 	}
 
