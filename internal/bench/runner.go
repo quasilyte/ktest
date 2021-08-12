@@ -75,6 +75,7 @@ func (r *runner) Run() error {
 		name string
 		fn   func() error
 	}{
+		{"check for issues", r.stepCheckIssues},
 		{"find bench files", r.stepFindBenchFiles},
 		{"prepare temp build dir", r.stepPrepareTempBuildDir},
 		{"parse bench files", r.stepParseBenchFiles},
@@ -88,6 +89,14 @@ func (r *runner) Run() error {
 		if err := step.fn(); err != nil {
 			return fmt.Errorf("%s: %w", step.name, err)
 		}
+	}
+
+	return nil
+}
+
+func (r *runner) stepCheckIssues() error {
+	for _, issue := range checkIssues() {
+		log.Printf("WARNING: %s", issue)
 	}
 
 	return nil
