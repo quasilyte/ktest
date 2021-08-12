@@ -20,11 +20,10 @@ func (v *astVisitor) StmtClass(n *ast.StmtClass) {
 		return
 	}
 	className := string(ident.Value)
-	if !strings.HasSuffix(className, "Benchmark") {
-		return
+	if strings.HasSuffix(className, "Benchmark") || strings.HasPrefix(className, "Benchmark") {
+		v.out.ClassName = className
+		v.currentClass = className
 	}
-	v.out.ClassName = className
-	v.currentClass = className
 }
 
 func (v *astVisitor) StmtClassMethod(n *ast.StmtClassMethod) {
