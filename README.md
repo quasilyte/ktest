@@ -36,7 +36,7 @@ class StringsTest extends TestCase {
 
 It comes without a surprise that you can run it with `phpunit` tool:
 
-```
+```bash
 $ ./vendor/bin/phpunit tests
 
 ......                                                              6 / 6 (100%)
@@ -50,7 +50,7 @@ When you're using `phpunit`, tests are executed as PHP, not KPHP.
 
 `ktest` makes it possible to run your phpunit-compatible tests with KPHP:
 
-```
+```bash
 $ ktest phpunit tests
 
 .... 4 / 6 (66%) OK
@@ -165,7 +165,7 @@ class BenchmarkConcat3 {
 
 This benchmark can be executed with a `bench` subcommand:
 
-```
+```bash
 $ ktest bench BenchmarkConcat3.php
 class BenchmarkConcat3
 BenchmarkConcat3::benchmarkConcat	106500	372.0 ns/op
@@ -176,7 +176,7 @@ Suppose that somebody proposed to re-write this function with `ob_start()` claim
 
 First, we need to collect samples of the current implementation. We need at least 5 rounds, but usually the more - the better (don't get too crazy though, 10 is good enough in most cases).
 
-```
+```bash
 $ ktest bench -count 5 Concat3Benchmark.php | tee old.txt
 ```
 
@@ -204,7 +204,7 @@ class Concat3Benchmark {
 
 Now we need to collect the new implementation results:
 
-```
+```bash
 $ ktest bench -count 5 Concat3Benchmark.php | tee new.txt
 ```
 
