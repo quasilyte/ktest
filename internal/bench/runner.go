@@ -289,6 +289,7 @@ func (r *runner) runPhpBench() error {
 		var runStdout bytes.Buffer
 		runCommand.Stderr = r.conf.Output
 		runCommand.Stdout = &runStdout
+		fmt.Fprintf(r.conf.Output, "class: %s\n", f.info.ClassName)
 		start := time.Now()
 		runErr := runCommand.Run()
 		elapsed := time.Since(start)
@@ -337,7 +338,7 @@ func (r *runner) stepRunBench() error {
 		var runStdout bytes.Buffer
 		runCommand.Stderr = r.conf.Output
 		runCommand.Stdout = &runStdout
-		fmt.Fprintf(r.conf.Output, "class %s\n", f.info.ClassName)
+		fmt.Fprintf(r.conf.Output, "class: %s\n", f.info.ClassName)
 		start := time.Now()
 		runErr := runCommand.Run()
 		elapsed := time.Since(start)
