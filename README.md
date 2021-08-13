@@ -9,7 +9,7 @@
 * `ktest bench-php` run benchmarks using PHP
 * `ktest bench-vs-php` run benchmarks using both KPHP and PHP, compare the results
 * `ktest benchstat` compute and compare statistics about benchmark results (see [benchstat](https://godoc.org/golang.org/x/perf/cmd/benchstat))
-* `ktest env` print ktest-related env variables information
+* `ktest env` print ktest-related env variables
 
 ## Example - phpunit
 

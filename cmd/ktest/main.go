@@ -50,7 +50,7 @@ func main() {
 
 		{
 			Name:        "env",
-			Description: "print ktest-related env variables information",
+			Description: "print ktest-related env variables",
 			Do:          envMain,
 		},
 	}
