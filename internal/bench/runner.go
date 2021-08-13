@@ -245,7 +245,7 @@ function __bench_main(int $count) {
   {{range $bench := $.BenchMethods}}
 
   for ($num_run = 0; $num_run < $count; ++$num_run) {
-    fprintf(STDERR, "{{$.BenchClassName}}::{{$bench.Name}}\t");
+    fprintf(STDERR, "{{$.BenchClassName}}::{{$bench.Key}}\t");
     $run1_start = hrtime(true);
     $bench->{{$bench.Name}}();
     $run1_end = hrtime(true);
