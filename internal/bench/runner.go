@@ -11,6 +11,7 @@ import (
 	"sort"
 	"strings"
 	"text/template"
+	"time"
 
 	"github.com/quasilyte/ktest/internal/fileutil"
 	"github.com/z7zmey/php-parser/pkg/conf"
@@ -214,6 +215,7 @@ func (r *runner) stepGenerateBenchMain() error {
 			"Unroll":         make([]struct{}, 20),
 			"MinTries":       20,
 			"IterationsRate": 100000000,
+			"Count":          r.conf.Count,
 		}
 		if r.composerMode {
 			templateData["Bootstrap"] = filepath.Join(r.conf.ProjectRoot, "vendor", "autoload.php")
@@ -235,36 +237,39 @@ require_once '{{.BenchFilename}}';
 require_once '{{.Bootstrap}}';
 {{end}}
 
-function __bench_main() {
+function __bench_main(int $count) {
   $bench = new {{.BenchClassName}}();
   $min_tries = {{.MinTries}};
   $iterations_rate = {{.IterationsRate}};
 
-  {{range $bench := .BenchMethods}}
+  {{range $bench := $.BenchMethods}}
 
-  fprintf(STDERR, "{{$bench.Key}}\t");
-  $run1_start = hrtime(true);
-  $bench->{{$bench.Name}}();
-  $run1_end = hrtime(true);
-  $op_time_approx = $run1_end - $run1_start;
-  $max_tries = max((int)($iterations_rate / $op_time_approx), $min_tries);
-  $time_total = 0;
-  $i = 0;
-  while ($i < $max_tries) {
-    $start = hrtime(true);
-    {{ range $.Unroll}}
+  for ($num_run = 0; $num_run < $count; ++$num_run) {
+    fprintf(STDERR, "{{$.BenchClassName}}::{{$bench.Name}}\t");
+    $run1_start = hrtime(true);
     $bench->{{$bench.Name}}();
-    {{- end}}
-    $time_total += hrtime(true) - $start;
-    $i += {{len $.Unroll}};
+    $run1_end = hrtime(true);
+    $op_time_approx = $run1_end - $run1_start;
+    $max_tries = max((int)($iterations_rate / $op_time_approx), $min_tries);
+    $time_total = 0;
+    $i = 0;
+    while ($i < $max_tries) {
+      $start = hrtime(true);
+      {{ range $.Unroll}}
+      $bench->{{$bench.Name}}();
+      {{- end}}
+      $time_total += hrtime(true) - $start;
+      $i += {{len $.Unroll}};
+    }
+    $avg_time = (int)($time_total / $i);
+    fprintf(STDERR, "$i\t$avg_time.0 ns/op\n");
   }
-  $avg_time = (int)($time_total / $i);
-  fprintf(STDERR, "$i\t$avg_time.0 ns/op\n");
 
   {{- end}}
 }
 
-__bench_main();
+$count = '{{.Count}}';
+__bench_main(intval($count));
 `))
 
 func (r *runner) runPhpBench() error {
@@ -274,20 +279,22 @@ func (r *runner) runPhpBench() error {
 			return err
 		}
 
-		for i := 0; i < r.conf.Count; i++ {
-			args := []string{
-				"-f", mainFilename,
-			}
-			runCommand := exec.Command(r.conf.PhpCommand, args...)
-			runCommand.Dir = r.buildDir
-			var runStdout bytes.Buffer
-			runCommand.Stderr = r.conf.Output
-			runCommand.Stdout = &runStdout
-			if err := runCommand.Run(); err != nil {
-				log.Printf("%s: run error: %v", f.fullName, err)
-				return fmt.Errorf("error running %s", f.fullName)
-			}
+		args := []string{
+			"-f", mainFilename,
 		}
+		runCommand := exec.Command(r.conf.PhpCommand, args...)
+		runCommand.Dir = r.buildDir
+		var runStdout bytes.Buffer
+		runCommand.Stderr = r.conf.Output
+		runCommand.Stdout = &runStdout
+		start := time.Now()
+		runErr := runCommand.Run()
+		elapsed := time.Since(start)
+		if runErr != nil {
+			log.Printf("%s: run error: %v", f.fullName, runErr)
+			return fmt.Errorf("error running %s", f.fullName)
+		}
+		fmt.Fprintf(r.conf.Output, "ok %s %v\n", f.info.ClassName, elapsed)
 	}
 
 	return nil
@@ -322,18 +329,21 @@ func (r *runner) stepRunBench() error {
 		}
 
 		// 2. Run.
-		for i := 0; i < r.conf.Count; i++ {
-			executableName := filepath.Join(r.buildDir, "cli")
-			runCommand := exec.Command(executableName)
-			runCommand.Dir = r.buildDir
-			var runStdout bytes.Buffer
-			runCommand.Stderr = r.conf.Output
-			runCommand.Stdout = &runStdout
-			if err := runCommand.Run(); err != nil {
-				log.Printf("%s: run error: %v", f.fullName, err)
-				return fmt.Errorf("error running %s", f.fullName)
-			}
+		executableName := filepath.Join(r.buildDir, "cli")
+		runCommand := exec.Command(executableName)
+		runCommand.Dir = r.buildDir
+		var runStdout bytes.Buffer
+		runCommand.Stderr = r.conf.Output
+		runCommand.Stdout = &runStdout
+		fmt.Fprintf(r.conf.Output, "class %s\n", f.info.ClassName)
+		start := time.Now()
+		runErr := runCommand.Run()
+		elapsed := time.Since(start)
+		if runErr != nil {
+			log.Printf("%s: rerror: %v", f.fullName, runErr)
+			return fmt.Errorf("error running %s", f.fullName)
 		}
+		fmt.Fprintf(r.conf.Output, "ok %s %v\n", f.info.ClassName, elapsed)
 	}
 
 	return nil

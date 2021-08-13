@@ -15,6 +15,7 @@ import (
 
 func benchmarkVsPHP(args []string) error {
 	fs := flag.NewFlagSet("ktest bench-vs-php", flag.ExitOnError)
+	flagGeomean := fs.Bool("geomean", false, "print the geometric mean of each file")
 	flagCount := fs.Int("count", 10, `run each benchmark n times`)
 	flagPhpCommand := fs.String("php", "php", `PHP command to run the benchmarks`)
 	flagKphpCommand := fs.String("kphp2cpp-binary", "", `kphp binary path; if empty, $KPHP_ROOT/objs/kphp2cpp is used`)
@@ -147,9 +148,11 @@ func benchmarkVsPHP(args []string) error {
 		args := []string{
 			"benchstat",
 			"-colorize", colorize,
-			phpResultsFile,
-			kphpResultsFile,
 		}
+		if *flagGeomean {
+			args = append(args, "-geomean")
+		}
+		args = append(args, phpResultsFile, kphpResultsFile)
 		out, err := exec.Command(os.Args[0], args...).CombinedOutput()
 		if err != nil {
 			return fmt.Errorf("run benchstat: %v: %s", err, out)

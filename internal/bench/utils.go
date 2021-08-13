@@ -16,7 +16,7 @@ func findBenchFiles(root string) ([]string, error) {
 		if info.IsDir() {
 			return nil
 		}
-		if strings.HasSuffix(info.Name(), "Benchmark.php") {
+		if strings.HasPrefix(info.Name(), "Benchmark") && strings.HasSuffix(info.Name(), ".php") {
 			out = append(out, path)
 		}
 		return nil

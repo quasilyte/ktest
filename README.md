@@ -148,7 +148,9 @@ Let's assume that you have a function that concatenates 3 strings. You can write
 ```php
 <?php
 
-class Concat3Benchmark {
+// file "BenchmarkConcat3.php"
+
+class BenchmarkConcat3 {
     private static $strings = [
         'foo',
         'bar',
@@ -164,11 +166,13 @@ class Concat3Benchmark {
 This benchmark can be executed with a `bench` subcommand:
 
 ```
-$ ktest bench Concat3Benchmark.php
-BenchmarkConcat	983284	363.0 ns/op
+$ ktest bench BenchmarkConcat3.php
+class BenchmarkConcat3
+BenchmarkConcat3::benchmarkConcat	106500	372.0 ns/op
+ok BenchmarkConcat3 147.153797ms
 ```
 
-Somebody proposed to re-write this function with `ob_start()` claiming that it would make things faster.
+Suppose that somebody proposed to re-write this function with `ob_start()` claiming that it would make things faster.
 
 First, we need to collect samples of the current implementation. We need at least 5 rounds, but usually the more - the better (don't get too crazy though, 10 is good enough in most cases).
 
@@ -207,7 +211,7 @@ $ ktest bench -count 5 Concat3Benchmark.php | tee new.txt
 When you have 2 sets of samples, it's possible to compare them with benchstat:
 
 ```
-$ benchstat old.txt new.txt
+$ ktest benchstat old.txt new.txt
 name    old time/op  new time/op  delta
 Concat   372ns ± 2%   546ns ± 6%  +46.91%  (p=0.008 n=5+5)
 ```
