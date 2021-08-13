@@ -11,6 +11,29 @@ import (
 	"golang.org/x/perf/benchstat"
 )
 
+func colorizeText(str string, colorCode string, enableColorize bool) string {
+	if enableColorize {
+		return strings.Join([]string{colorCode, str, "\033[0m"}, "")
+	}
+	return str
+}
+
+func redColorize(str string, enableColorize bool) string {
+	return colorizeText(str, "\033[31m", enableColorize)
+}
+
+func greenColorize(str string, enableColorize bool) string {
+	return colorizeText(str, "\033[32m", enableColorize)
+}
+
+func yellowColorize(str string, enableColorize bool) string {
+	return colorizeText(str, "\033[33m", enableColorize)
+}
+
+func cyanColorize(str string, enableColorize bool) string {
+	return colorizeText(str, "\033[36m", enableColorize)
+}
+
 func cmdBenchstat(args []string) error {
 	fs := flag.NewFlagSet("ktest benchstat", flag.ExitOnError)
 	flagDeltaTest := fs.String("delta-test", "utest", "significance `test` to apply to delta: utest, ttest, or none")
@@ -18,7 +41,14 @@ func cmdBenchstat(args []string) error {
 	flagGeomean := fs.Bool("geomean", false, "print the geometric mean of each file")
 	flagSplit := fs.String("split", "pkg,goos,goarch", "split benchmarks by `labels`")
 	flagSort := fs.String("sort", "none", "sort by `order`: [-]delta, [-]name, none")
+	colorize := fs.String("colorize", "auto", "colorize output: auto, true, false")
 	fs.Parse(args)
+
+	enableColorize := strings.ToLower(*colorize) == "true"
+	if *colorize == "auto" {
+		fileInfo, _ := os.Stdout.Stat()
+		enableColorize = (fileInfo.Mode() & os.ModeCharDevice) != 0
+	}
 
 	var deltaTestNames = map[string]benchstat.DeltaTest{
 		"none":   benchstat.NoDeltaTest,
@@ -83,6 +113,18 @@ func cmdBenchstat(args []string) error {
 	}
 
 	tables := c.Tables()
+	for _, table := range tables {
+		for _, row := range table.Rows {
+			row.Benchmark = cyanColorize(row.Benchmark, enableColorize)
+			if strings.HasPrefix(row.Delta, "+") {
+				row.Delta = redColorize(row.Delta, enableColorize)
+			} else if strings.HasPrefix(row.Delta, "-") {
+				row.Delta = greenColorize(row.Delta, enableColorize)
+			} else {
+				row.Delta = yellowColorize(row.Delta, enableColorize)
+			}
+		}
+	}
 	var buf bytes.Buffer
 	benchstat.FormatText(&buf, tables)
 	os.Stdout.Write(buf.Bytes())

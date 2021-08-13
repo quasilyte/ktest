@@ -138,8 +138,13 @@ func benchmarkVsPHP(args []string) error {
 
 	printProgress("running benchstat...")
 	{
+		colorize := "false"
+		if fileInfo, _ := os.Stdout.Stat(); (fileInfo.Mode() & os.ModeCharDevice) != 0 {
+			colorize = "true"
+		}
 		args := []string{
 			"benchstat",
+			"-colorize", colorize,
 			phpResultsFile,
 			kphpResultsFile,
 		}
