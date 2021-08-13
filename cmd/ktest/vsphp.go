@@ -9,6 +9,8 @@ import (
 	"os"
 	"os/exec"
 	"time"
+
+	"github.com/quasilyte/ktest/internal/fileutil"
 )
 
 func benchmarkVsPHP(args []string) error {
@@ -139,7 +141,7 @@ func benchmarkVsPHP(args []string) error {
 	printProgress("running benchstat...")
 	{
 		colorize := "false"
-		if fileInfo, _ := os.Stdout.Stat(); (fileInfo.Mode() & os.ModeCharDevice) != 0 {
+		if fileutil.IsUnixCharDevice(os.Stdout) {
 			colorize = "true"
 		}
 		args := []string{

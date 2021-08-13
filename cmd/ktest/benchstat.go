@@ -8,6 +8,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/quasilyte/ktest/internal/fileutil"
 	"golang.org/x/perf/benchstat"
 )
 
@@ -46,8 +47,7 @@ func cmdBenchstat(args []string) error {
 
 	enableColorize := strings.ToLower(*colorize) == "true"
 	if *colorize == "auto" {
-		fileInfo, _ := os.Stdout.Stat()
-		enableColorize = (fileInfo.Mode() & os.ModeCharDevice) != 0
+		enableColorize = fileutil.IsUnixCharDevice(os.Stdout)
 	}
 
 	var deltaTestNames = map[string]benchstat.DeltaTest{
