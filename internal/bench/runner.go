@@ -212,6 +212,8 @@ func (r *runner) stepGenerateBenchMain() error {
 			"BenchClassName": f.info.ClassName,
 			"BenchMethods":   f.info.BenchMethods,
 			"Unroll":         make([]struct{}, 20),
+			"MinTries":       20,
+			"IterationsRate": 100000000,
 		}
 		if r.composerMode {
 			templateData["Bootstrap"] = filepath.Join(r.conf.ProjectRoot, "vendor", "autoload.php")
@@ -235,6 +237,8 @@ require_once '{{.Bootstrap}}';
 
 function __bench_main() {
   $bench = new {{.BenchClassName}}();
+  $min_tries = {{.MinTries}};
+  $iterations_rate = {{.IterationsRate}};
 
   {{range $bench := .BenchMethods}}
 
@@ -243,23 +247,19 @@ function __bench_main() {
   $bench->{{$bench.Name}}();
   $run1_end = hrtime(true);
   $op_time_approx = $run1_end - $run1_start;
-  $num_tries = (int)(1000000000 / $op_time_approx);
-  if ($num_tries < 40) {
-    $num_tries = 40;
-  }
+  $max_tries = max((int)($iterations_rate / $op_time_approx), $min_tries);
   $time_total = 0;
-  for ($i = 0; $i < $num_tries; $i += {{len $.Unroll}}) {
+  $i = 0;
+  while ($i < $max_tries) {
     $start = hrtime(true);
     {{ range $.Unroll}}
     $bench->{{$bench.Name}}();
     {{- end}}
-    $elapsed = hrtime(true) - $start;
-    if ($elapsed > 0) {
-      $time_total += $elapsed;
-    }
+    $time_total += hrtime(true) - $start;
+    $i += {{len $.Unroll}};
   }
-  $avg_time = (int)($time_total / $num_tries);
-  fprintf(STDERR, "$num_tries\t$avg_time.0 ns/op\n");
+  $avg_time = (int)($time_total / $i);
+  fprintf(STDERR, "$i\t$avg_time.0 ns/op\n");
 
   {{- end}}
 }

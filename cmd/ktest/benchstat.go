@@ -31,10 +31,6 @@ func yellowColorize(str string, enableColorize bool) string {
 	return colorizeText(str, "\033[33m", enableColorize)
 }
 
-func cyanColorize(str string, enableColorize bool) string {
-	return colorizeText(str, "\033[36m", enableColorize)
-}
-
 func cmdBenchstat(args []string) error {
 	fs := flag.NewFlagSet("ktest benchstat", flag.ExitOnError)
 	flagDeltaTest := fs.String("delta-test", "utest", "significance `test` to apply to delta: utest, ttest, or none")
@@ -115,7 +111,6 @@ func cmdBenchstat(args []string) error {
 	tables := c.Tables()
 	for _, table := range tables {
 		for _, row := range table.Rows {
-			row.Benchmark = cyanColorize(row.Benchmark, enableColorize)
 			if strings.HasPrefix(row.Delta, "+") {
 				row.Delta = redColorize(row.Delta, enableColorize)
 			} else if strings.HasPrefix(row.Delta, "-") {
