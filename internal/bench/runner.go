@@ -246,6 +246,8 @@ function __bench_main(int $count) {
 
   for ($num_run = 0; $num_run < $count; ++$num_run) {
     fprintf(STDERR, "{{$.BenchClassName}}::{{$bench.Key}}\t");
+    // run0 is not counted to allow the warmup
+    $bench->{{$bench.Name}}();
     $run1_start = hrtime(true);
     $bench->{{$bench.Name}}();
     $run1_end = hrtime(true);
